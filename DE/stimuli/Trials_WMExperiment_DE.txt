@@ -1,0 +1,3 @@
+###orig, trial#;typeCartoon1;locationCartoon1;typeCartoon2;locationCartoon2;typeCartoon3;locationCartoon3;cartoonForUpdate1;directionUpdate1;cartoonForUpdate2;directionUpdate2;cartoonForUpdate3;directionUpdate3;cartoonForUpdate4;directionUpdate4;question1Cartoon;question1CorrectAnswer;question2Cartoon;question2CorrectAnswer; question3Cartoon;question3CorrectAnswer;
+1;red;A1;blue;B3;;;red;N;blue;S;red;NE;;;red;C2;blue;A3;;;
+2;green;A3;red;D2;blue;C1;red;W;blue;NE;green;NW;red;S;blue;D2;green;B2;red;C1;

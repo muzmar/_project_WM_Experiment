@@ -1,0 +1,2 @@
+subject_id;trial;trial_id;cond;face_id;sex;focus_part;face_id_foil;target_pos;first_pres_in_cond;image_name_target;image_name_l;image_name_r;practice;ans;correct;rt
+12;1;1;part;1;female;nose;2;right;part;01w.jpg;01pf.jpg;01po.jpg;0;rctrl;1;2.4773532663
