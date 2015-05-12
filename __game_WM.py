@@ -17,7 +17,7 @@ from psychopy import visual, core, event, gui, data
 # global variables: INTERFACE
 #===============================================================================
 
-PATH = 'C:\\pythonProjects\\_project'
+PATH = 'C:\\pythonProjects\\_project_WM_Experiment'
 FIXCROSS_SIZE = 40 #size of the fixation cross (the character '+' in Arial)
 INSTR_CHAR_SIZE = 18 #character size for instructions
 OUTPATH = '%s\\results\\'%(PATH) #output path for storing the results
@@ -109,12 +109,8 @@ def match_answer(answer_given, condition):
 #===============================================================================
 # experiment class
 #===============================================================================
-class ExperimentTrial():
+class Cartoon():
 
-
-    def __init__(self, item):
-
-        self.item = item
 
     def get_position(self, loc):
 
@@ -153,15 +149,12 @@ class ExperimentTrial():
 
         self.pos = position
 
-#------------------------------------------------------------------------------
-# Finding the position
 
-def get_position(name):
-    '''
-    :param name: string
-    :return: list with length of 2
-    '''
-    pass
+    def image_path(self, type):
+
+        self.image = '%s/images/%s.png'%(PATH, type)
+
+
 
 #------------------------------------------------------------------------------
 # define trial procedure
@@ -176,7 +169,7 @@ def run_trials(items, trial_order, practice=False):
         item = items[i]#-1]
 
         #prepare stimulus and draw on screen
-        background = visual.ImageStim(expWindow, image='%s/images/background,gif'%PATH, pos=[-0,0], units=u'pix')
+        background = visual.ImageStim(expWindow, image='%s/images/background.gif'%PATH, pos=[-0,0], units=u'pix')
         cartoon1 = visual.ImageStim(expWindow, image='%s/images/%s.png'%(PATH, item[1]), pos=[-200,0], units=u'pix')
         stim_right = visual.ImageStim(expWindow, image='%s/%s/stimuli/%s%s'%(PATH, LANGUAGE, item_prefix, item[10]), pos=[200,0], units=u'pix')
 
