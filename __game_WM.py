@@ -109,45 +109,64 @@ def match_answer(answer_given, condition):
 #===============================================================================
 # experiment class
 #===============================================================================
-class Cartoon():
+class Image():
 
 
-    def get_position(self, loc):
+    def __init__(self, name, type, **kwargs):
+        '''
+        :param name: name of the image
+        :param type: can be "load", "arrow", "questionMark", "questionLoad"
+        :return:
+        '''
+        self.path = name
+        self.type = type
+        if 'loc' in kwargs:
+            self.loc = kwargs['loc']
 
-        if loc == "A1":
-            position = [-3*HALF_WIDTH, -3*HALF_WIDTH]
-        elif loc == "A2":
-            position = [-HALF_WIDTH, -3*HALF_WIDTH]
-        elif loc == "A3":
-            position = [HALF_WIDTH, -3*HALF_WIDTH]
-        elif loc == "A4":
-            position = [3*HALF_WIDTH, -3*HALF_WIDTH]
-        elif loc == "B1":
-            position = [-3*HALF_WIDTH, -HALF_WIDTH]
-        elif loc == "B2":
-            position = [-HALF_WIDTH, -HALF_WIDTH]
-        elif loc == "B3":
-            position = [HALF_WIDTH, -HALF_WIDTH]
-        elif loc == "B4":
-            position = [3*HALF_WIDTH, -HALF_WIDTH]
-        elif loc == "C1":
-            position = [-3*HALF_WIDTH, HALF_WIDTH]
-        elif loc == "C2":
-            position = [-HALF_WIDTH, HALF_WIDTH]
-        elif loc == "C3":
-            position = [HALF_WIDTH, HALF_WIDTH]
-        elif loc == "C4":
-            position = [3*HALF_WIDTH, HALF_WIDTH]
-        if loc == "D1":
-            position = [-3*HALF_WIDTH, 3*HALF_WIDTH]
-        elif loc == "D2":
-            position = [-HALF_WIDTH, 3*HALF_WIDTH]
-        elif loc == "D3":
-            position = [HALF_WIDTH, 3*HALF_WIDTH]
-        elif loc == "D4":
-            position = [3*HALF_WIDTH, 3*HALF_WIDTH]
 
-        self.pos = position
+    def get_position(self):
+
+        if self.type == "arrow":
+            position = [0,0]
+        elif self.type == "questionMark":
+            position = [-216-54, 216-75]
+        elif self.type == "questionLoad":
+            position = [-216-54, -34]
+        elif self.type == "load":
+            if self.loc == "A1":
+                position = [-3*HALF_WIDTH, -3*HALF_WIDTH]
+            elif self.loc == "A2":
+                position = [-HALF_WIDTH, -3*HALF_WIDTH]
+            elif self.loc == "A3":
+                position = [HALF_WIDTH, -3*HALF_WIDTH]
+            elif self.loc == "A4":
+                position = [3*HALF_WIDTH, -3*HALF_WIDTH]
+            elif self.loc == "B1":
+                position = [-3*HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "B2":
+                position = [-HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "B3":
+                position = [HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "B4":
+                position = [3*HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "C1":
+                position = [-3*HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "C2":
+                position = [-HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "C3":
+                position = [HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "C4":
+                position = [3*HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "D1":
+                position = [-3*HALF_WIDTH, 3*HALF_WIDTH]
+            elif self.loc == "D2":
+                position = [-HALF_WIDTH, 3*HALF_WIDTH]
+            elif self.loc == "D3":
+                position = [HALF_WIDTH, 3*HALF_WIDTH]
+            elif self.loc == "D4":
+                position = [3*HALF_WIDTH, 3*HALF_WIDTH]
+
+        return position
 
 
     def image_path(self, type):
