@@ -88,8 +88,15 @@ output_file = OUTPATH + expInfo['expName'] + '_%s.txt'%expInfo['subjectID']
 rt_clock = core.Clock() #reaction time clock
 
 #create a window
-expWindow = visual.Window(size=SCREEN_SIZE, monitor="testMonitor", color=(230,230,230), colorSpace='rgb255', units=u'pix')
+expWindow = visual.Window(size=SCREEN_SIZE,monitor="testMonitor",color=(230,230,230), colorSpace='rgb255', units=u'pix')
 # fullscr=True,
+
+correct_answer_message = visual.TextStim(expWindow, pos=[0, 0], text="Richtig!", font='Courier New', bold=True,
+                                         color=(0, 1.0, 0), height=50, alignHoriz='center', units=u'pix')
+false_answer_message = visual.TextStim(expWindow, pos=[0, 0], text="Falsch!", font='Courier New', bold=True,
+                                       color=(1.0, 0, 0), height=50, alignHoriz='center', units=u'pix')
+time_up_message = visual.TextStim(expWindow, pos=[0, 0], text="Die Zeit ist um!", font='Courier New', bold=True,
+                                         color=(1.0, 0, 0), height=35, alignHoriz='center', units=u'pix')
 
 #===============================================================================
 # read instructions
@@ -252,6 +259,7 @@ def run_trials(items, practice=False):
                 break
             Image("background", "arrow").buffer().draw()
             update = Image(item[i+7], "arrow").buffer()
+            update.ori = 45
             update.draw()
             expWindow.flip()
             core.wait(2.5) #2500 ms
@@ -260,7 +268,7 @@ def run_trials(items, practice=False):
             expWindow.flip()
             core.wait(.5) #500 ms
 
-        # questions
+        # questions ---------------------- now we have one column for update (it should get modified for two)
         for i in range(3):
             if i == 2 and not item[5]:
                 break
@@ -270,7 +278,7 @@ def run_trials(items, practice=False):
             #ques.draw()
             Image(item[11+i*2], "questionLoad").buffer().draw()
 
-            # ------------------ mouse interaction
+            # mouse interaction
             mouse = event.Mouse(win=expWindow)
             expWindow.flip()
             rtClock = core.Clock()
@@ -281,12 +289,28 @@ def run_trials(items, practice=False):
                 if time.time() > timeout:
                     answer = False
                     rt = 31
+                    if practice:
+                        Image("background", "arrow").buffer().draw()
+                        Image("questionMark", "questionMark").buffer().draw()
+                        Image(item[11+i*2], "questionLoad").buffer().draw()
+                        time_up_message.draw()
+                        expWindow.flip()
+                        core.wait(1)
                     break
                 if mouse.getPressed()[0]:
                     x, y = mouse.getPos()
                     answer = check_answer(x, y, item[12+i*2])
                     rt = rtClock.getTime()
-                    print rt
+                    if practice:
+                        Image("background", "arrow").buffer().draw()
+                        Image("questionMark", "questionMark").buffer().draw()
+                        Image(item[11+i*2], "questionLoad").buffer().draw()
+                        if answer:
+                            correct_answer_message.draw()
+                        else:
+                            false_answer_message.draw()
+                        expWindow.flip()
+                        core.wait(1)
                     break
 
             # ISI
@@ -315,7 +339,7 @@ def run_trials(items, practice=False):
 
 #------------------------------------------------------------------------------
 # present instructions
-run_trials(items)
+run_trials(items, practice=True)
 import pdb
 pdb.set_trace()
 
