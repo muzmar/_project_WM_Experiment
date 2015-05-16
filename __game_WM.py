@@ -5,6 +5,7 @@
 @date: 2015-05-12
 '''
 
+import time
 import string
 import codecs
 #import random
@@ -24,7 +25,7 @@ OUTPATH = '%s\\results\\'%(PATH) #output path for storing the results
 AVAILABLE_KEYS = ['lctrl', 'rctrl', 'q']
 LANGUAGE = 'DE' #which language is the experiment in: 'DE'=German. 'CN'=Chinese
 MATCHING = {'lctrl':'left', 'rctrl':'right'} #matching of buttons to answers
-SCREEN_SIZE = [1000, 500] #what is your screen resolution?
+SCREEN_SIZE = [800, 480] #what is your screen resolution?
 LANG_FONT_MAP = {'DE':'Courier New', 'CN':'SimSun'} #what font is used for what language?
 HALF_WIDTH = 432/8
 
@@ -32,18 +33,18 @@ HALF_WIDTH = 432/8
 #===============================================================================
 # initial dialogue box
 #===============================================================================
-inputInfo = ['', 'a', '']
+inputInfo = ['a', '']
 count = 0
-while inputInfo[1] != inputInfo[2] or not inputInfo[1].isdigit():
+while inputInfo[0] != inputInfo[1] or not inputInfo[0].isdigit():
     expDlg = gui.Dlg(title="WM Experiment")
     expDlg.addText("Subject info")
-    expDlg.addField("Name:", fieldLength=25)
-    expDlg.addField("ID:", fieldLength=25)
-    expDlg.addField("ID:", fieldLength=25)
+    #expDlg.addField("Name:", fieldLength=25)
+    expDlg.addField("Subject_ID:", fieldLength=25)
+    expDlg.addField("Repeat__ID:", fieldLength=25)
     expDlg.addText("")
-    expDlg.addText("Experiment info")
-    expDlg.addField("Group:", choices=["Test", "Control"], fieldLength=25)
-    expDlg.addText("")
+    #expDlg.addText("Experiment info")
+    #expDlg.addField("Group:", choices=["Test", "Control"], fieldLength=25)
+    #expDlg.addText("")
     if count:
         expDlg.addText("ERROR: IDs must be same integers", color='Red')
     expDlg.show()
@@ -76,11 +77,7 @@ def read_stimuli(stimuli):
 #practice_items, practice_trial_order = read_stims('%s/%s/stimuli/Practice_PartWholeFaces_%s.txt'%(PATH,LANGUAGE,LANGUAGE))
 items, header = read_stimuli('%s\\%s\\stimuli\\Trials_WMExperiment_%s.txt'%(PATH,LANGUAGE,LANGUAGE))
 
-print header
-print items
 
-import pdb
-pdb.set_trace()
 #===============================================================================
 # Other preparations
 #===============================================================================
@@ -91,21 +88,57 @@ output_file = OUTPATH + expInfo['expName'] + '_%s.txt'%expInfo['subjectID']
 rt_clock = core.Clock() #reaction time clock
 
 #create a window
-expWindow = visual.Window(size=SCREEN_SIZE, monitor="testMonitor", color=(230,230,230), colorSpace='rgb255', units="deg")
+expWindow = visual.Window(size=SCREEN_SIZE, monitor="testMonitor", color=(230,230,230), colorSpace='rgb255', units=u'pix')
 # fullscr=True,
 
 #===============================================================================
 # read instructions
 #===============================================================================
 
-def match_answer(answer_given, condition):
+def check_answer(x, y, correct_answer):
     '''
-    Function to match the answer of the participant with the correct answer.
-    lctrl: left
-    rctrl: right
+    :param x: integer first dimension of mouse click
+    :param y: integer second dimension of mouse click
+    :param correct_answer: string
+    :return:
     '''
-    return int(MATCHING.get(answer_given, 'escape') == condition)
+    if correct_answer == "A1":
+        interval = [-4*HALF_WIDTH, -2*HALF_WIDTH, -4*HALF_WIDTH, -2*HALF_WIDTH]
+    elif correct_answer == "A2":
+        interval = [-2*HALF_WIDTH, 0, -4*HALF_WIDTH, -2*HALF_WIDTH]
+    elif correct_answer == "A3":
+        interval = [0, 2*HALF_WIDTH, -4*HALF_WIDTH, -2*HALF_WIDTH]
+    elif correct_answer == "A4":
+        interval = [2*HALF_WIDTH, 4*HALF_WIDTH, -4*HALF_WIDTH, -2*HALF_WIDTH]
+    elif correct_answer == "B1":
+        interval = [-4*HALF_WIDTH, -2*HALF_WIDTH, -2*HALF_WIDTH, 0]
+    elif correct_answer == "B2":
+        interval = [-2*HALF_WIDTH, 0, -2*HALF_WIDTH, 0]
+    elif correct_answer == "B3":
+        interval = [0, 2*HALF_WIDTH, -2*HALF_WIDTH, 0]
+    elif correct_answer == "B4":
+        interval = [2*HALF_WIDTH, 4*HALF_WIDTH, -2*HALF_WIDTH, 0]
+    elif correct_answer == "C1":
+        interval = [-4*HALF_WIDTH, -2*HALF_WIDTH, 0, 2*HALF_WIDTH]
+    elif correct_answer == "C2":
+        interval = [-2*HALF_WIDTH, 0, 0, 2*HALF_WIDTH]
+    elif correct_answer == "C3":
+        interval = [0, 2*HALF_WIDTH, 0, 2*HALF_WIDTH]
+    elif correct_answer == "C4":
+        interval = [2*HALF_WIDTH, 4*HALF_WIDTH, 0, 2*HALF_WIDTH]
+    elif correct_answer == "D1":
+        interval = [-4*HALF_WIDTH, -2*HALF_WIDTH, 2*HALF_WIDTH, 4*HALF_WIDTH]
+    elif correct_answer == "D2":
+        interval = [-2*HALF_WIDTH, 0, 2*HALF_WIDTH, 4*HALF_WIDTH]
+    elif correct_answer == "D3":
+        interval = [0, 2*HALF_WIDTH, 2*HALF_WIDTH, 4*HALF_WIDTH]
+    elif correct_answer == "D4":
+        interval = [2*HALF_WIDTH, 4*HALF_WIDTH, 2*HALF_WIDTH, 4*HALF_WIDTH]
 
+    if (x >= interval[0] and x <= interval[1]) and (y >= interval[2] and y <= interval[3]):
+        return True
+    else:
+        return False
 #===============================================================================
 # experiment class
 #===============================================================================
@@ -114,15 +147,16 @@ class Image():
 
     def __init__(self, name, type, **kwargs):
         '''
+        ** if the format of images are different(ie. .png, .jpg, .gif) give the complete name with extension and
+        remove the ".png" from self.path
         :param name: name of the image
         :param type: can be "load", "arrow", "questionMark", "questionLoad"
         :return:
         '''
-        self.path = name
+        self.path = '{0}\\images\\{1}.png'.format(PATH, name)
         self.type = type
         if 'loc' in kwargs:
             self.loc = kwargs['loc']
-
 
     def get_position(self):
 
@@ -168,19 +202,21 @@ class Image():
 
         return position
 
+    def buffer(self):
 
-    def image_path(self, type):
+        bufferImage = visual.ImageStim(expWindow, image=self.path, pos=self.get_position(), units=u'pix')
+        return bufferImage
 
-        self.image = '%s/images/%s.png'%(PATH, type)
-
-
+#-----------------------------------------------------------------------------
+# instruction
+Image("instruction", "arrow").buffer().draw()
+expWindow.flip() #flip blank screen
+core.wait(10) #10000 ms
 
 #------------------------------------------------------------------------------
 # define trial procedure
 
-def run_trials(items, trial_order, practice=False):
-
-    trial_count = 1
+def run_trials(items, practice=False):
 
     #loop through trials
     for i in [0,1]:#trial_order:
@@ -188,68 +224,89 @@ def run_trials(items, trial_order, practice=False):
         item = items[i]#-1]
 
         #prepare stimulus and draw on screen
-        background = visual.ImageStim(expWindow, image='%s/images/background.gif'%PATH, pos=[-0,0], units=u'pix')
-        cartoon1 = visual.ImageStim(expWindow, image='%s/images/%s.png'%(PATH, item[1]), pos=[-200,0], units=u'pix')
-        stim_right = visual.ImageStim(expWindow, image='%s/%s/stimuli/%s%s'%(PATH, LANGUAGE, item_prefix, item[10]), pos=[200,0], units=u'pix')
+        background = Image("background", "arrow").buffer()
+        cartoon1 = Image(item[1], "load", loc=item[2]).buffer()
+        cartoon2 = Image(item[3], "load", loc=item[4]).buffer()
 
         #pre-stimulus interval
         expWindow.flip() #flip blank screen
-        core.wait(1.3) #1300 ms
+        core.wait(1.5) #1500 ms
 
-        #fix_cross
-        fix_cross.draw()
+        # Initial view
+        background.draw()
+        cartoon1.draw()
+        cartoon2.draw()
+        if item[5]:
+            Image(item[5], "load", loc=item[6]).buffer().draw()
         expWindow.flip()
-        core.wait(0.2) #200 ms
+        core.wait(3) #3000 ms
 
-        #draw target
-        target.draw()
+        # ISI
         expWindow.flip()
-        core.wait(1) #1000 ms
+        core.wait(.5) #500 ms
 
-        #mask (200 ms)
-        mask.draw()
-        expWindow.flip()
-        core.wait(0.2) #200 ms
 
-        #blank (1 cycle)
-        expWindow.flip()
+        # updates
+        for i in range(4):
+            if i == 3 and not item[5]:
+                break
+            Image("background", "arrow").buffer().draw()
+            update = Image(item[i+7], "arrow").buffer()
+            update.draw()
+            expWindow.flip()
+            core.wait(2.5) #2500 ms
 
-        #draw to back buffer
-        stim_left.draw()
-        stim_right.draw()
-        reminder_screen.draw()
-        #present
-        expWindow.flip()
+            # ISI
+            expWindow.flip()
+            core.wait(.5) #500 ms
 
-        #start reaction time clock and collect answer
-        rt_clock.reset()
-        ans = event.waitKeys(keyList=AVAILABLE_KEYS)
+        # questions
+        for i in range(3):
+            if i == 2 and not item[5]:
+                break
+            Image("background", "arrow").buffer().draw()
+            Image("questionMark", "questionMark").buffer().draw()
+            #ques.ori = 45
+            #ques.draw()
+            Image(item[11+i*2], "questionLoad").buffer().draw()
 
-        #get reaction time
-        rt = rt_clock.getTime()
+            # ------------------ mouse interaction
+            mouse = event.Mouse(win=expWindow)
+            expWindow.flip()
+            rtClock = core.Clock()
+            rtClock.reset()
+
+            timeout = time.time() + 60*0.5   # 30 seconds from now
+            while True:
+                if time.time() > timeout:
+                    answer = False
+                    rt = 31
+                    break
+                if mouse.getPressed()[0]:
+                    x, y = mouse.getPos()
+                    answer = check_answer(x, y, item[12+i*2])
+                    rt = rtClock.getTime()
+                    print rt
+                    break
+
+            # ISI
+            expWindow.flip()
+            core.wait(.5) #500 ms
 
         #write out answers
-        string_output = [expInfo['subjectID'], str(trial_count)] #initialize output list: subject ID, trial number (in exp)
-        string_output.extend([str(x) for x in item]) #add trial infos
-        string_output.extend([str(int(practice)),str(ans[-1]), str(match_answer(ans[-1], item[6])), str(rt)]) #add answer infos
-        outfile.write(';'.join(string_output) + '\n') #write to file
+        #string_output = [expInfo['subjectID'], str(trial_count)] #initialize output list: subject ID, trial number (in exp)
+        #string_output.extend([str(x) for x in item]) #add trial infos
+        #string_output.extend([str(int(practice)),str(ans[-1]), str(match_answer(ans[-1], item[6])), str(rt)]) #add answer infos
+        #outfile.write(';'.join(string_output) + '\n') #write to file
 
-        if practice and match_answer(ans[-1], item[6]):
-            correct_screen.draw()
-            expWindow.flip()
-            core.wait(1)
-        elif practice:
-            incorrect_screen.draw()
-            expWindow.flip()
-            core.wait(1)
 
         #check if experiment was aborted
-        if len(ans) == 2:
-            if ans[-2] == 'lctrl' and ans[-1] == 'q':
-                expWindow.close()
-                core.quit()
+        #if len(ans) == 2:
+        #    if ans[-2] == 'lctrl' and ans[-1] == 'q':
+        #        expWindow.close()
+        #        core.quit()
 
-        trial_count += 1
+        #trial_count += 1
 
 
 #===============================================================================
@@ -258,6 +315,7 @@ def run_trials(items, trial_order, practice=False):
 
 #------------------------------------------------------------------------------
 # present instructions
+run_trials(items)
 import pdb
 pdb.set_trace()
 
@@ -293,4 +351,3 @@ event.waitKeys()
 
 expWindow.close()
 core.quit()
-
