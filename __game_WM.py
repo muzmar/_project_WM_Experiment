@@ -1,50 +1,42 @@
 # -*- coding: utf-8 -*-
-'''
-@author: Hossein Sabri
-@contact: hossein.sabri@gmail.com 
-@date: 2015-05-12
-'''
+
+# @author: Hossein Sabri
+# @contact: hossein.sabri@gmail.com
+# @date: 2015-05-12
 
 import time
-import string
 import codecs
-#import random
-
-#import psychopy as psp
 
 from psychopy import visual, core, event, gui, data
 
-#===============================================================================
+# ===============================================================================
 # global variables: INTERFACE
-#===============================================================================
+# ===============================================================================
 
 PATH = 'C:\\pythonProjects\\_project_WM_Experiment'
-FIXCROSS_SIZE = 40 #size of the fixation cross (the character '+' in Arial)
-INSTR_CHAR_SIZE = 18 #character size for instructions
-OUTPATH = '%s\\results\\'%(PATH) #output path for storing the results
-AVAILABLE_KEYS = ['lctrl', 'rctrl', 'q']
-LANGUAGE = 'DE' #which language is the experiment in: 'DE'=German. 'CN'=Chinese
-MATCHING = {'lctrl':'left', 'rctrl':'right'} #matching of buttons to answers
-SCREEN_SIZE = [800, 480] #what is your screen resolution?
-LANG_FONT_MAP = {'DE':'Courier New', 'CN':'SimSun'} #what font is used for what language?
+FIXCROSS_SIZE = 40  # size of the fixation cross (the character '+' in Arial)
+INSTR_CHAR_SIZE = 18  # character size for instructions
+OUTPATH = '%s\\results\\' % PATH  # output path for storing the results
+LANGUAGE = 'DE'  # which language is the experiment in: 'DE'=German. 'CN'=Chinese
+SCREEN_SIZE = [800, 480]  # what is your screen resolution?
+LANG_FONT_MAP = {'DE': 'Courier New', 'CN': 'SimSun'}  # what font is used for what language?
 HALF_WIDTH = 432/8
 
-
-#===============================================================================
+# ===============================================================================
 # initial dialogue box
-#===============================================================================
+# ===============================================================================
 inputInfo = ['a', '']
 count = 0
 while inputInfo[0] != inputInfo[1] or not inputInfo[0].isdigit():
     expDlg = gui.Dlg(title="WM Experiment")
     expDlg.addText("Subject info")
-    #expDlg.addField("Name:", fieldLength=25)
+    # expDlg.addField("Name:", fieldLength=25)
     expDlg.addField("Subject_ID:", fieldLength=25)
     expDlg.addField("Repeat__ID:", fieldLength=25)
     expDlg.addText("")
-    #expDlg.addText("Experiment info")
-    #expDlg.addField("Group:", choices=["Test", "Control"], fieldLength=25)
-    #expDlg.addText("")
+    # expDlg.addText("Experiment info")
+    # expDlg.addField("Group:", choices=["Test", "Control"], fieldLength=25)
+    # expDlg.addText("")
     if count:
         expDlg.addText("ERROR: IDs must be same integers", color='Red')
     expDlg.show()
@@ -54,40 +46,50 @@ while inputInfo[0] != inputInfo[1] or not inputInfo[0].isdigit():
     else:
         core.quit()
 
-#===============================================================================
+# ===============================================================================
 # read stimuli
-#===============================================================================
+# ===============================================================================
 
 def read_stimuli(stimuli):
-    itemList = []
-    header = []
+    trials = []
+    file_header = []
     with codecs.open(stimuli, 'rb', encoding="utf-8") as infile:
         for line in infile:
             line = line.strip()
-            if '###' in line: #its the header
+            if '###' in line:  # its the header
                 line = line.split(';')
-                header.append(line[0:21])
-            elif len(line) == 0: #last line if an empty one
+                file_header.append(line[0:len(line)-1])
+            elif len(line) == 0:  # last line if an empty one
                 break
             else:
                 line = line.split(';')
-                itemList.append(line[0:21]) #write entire rest of the line
-    return itemList, header
+                trials.append(line[0:len(line)-1])  # write entire rest of the line
+    return trials, file_header
 
-#practice_items, practice_trial_order = read_stims('%s/%s/stimuli/Practice_PartWholeFaces_%s.txt'%(PATH,LANGUAGE,LANGUAGE))
-items, header = read_stimuli('%s\\%s\\stimuli\\Trials_WMExperiment_%s.txt'%(PATH,LANGUAGE,LANGUAGE))
+trials_list, header = read_stimuli('%s\\%s\\stimuli\\Trials_WMExperiment_%s.txt'%(PATH,LANGUAGE,LANGUAGE))
 
+# Edit header line for using in the output
+header[0][0] = "trial"
+header[0].insert(0, "load")
+header[0].insert(0, "Subject_ID")
+header[0].append("question1")
+header[0].append("rt1")
+header[0].append("question2")
+header[0].append("rt2")
+header[0].append("question3")
+header[0].append("rt3")
 
-#===============================================================================
+# ===============================================================================
 # Other preparations
-#===============================================================================
+# ===============================================================================
 
-expInfo = {'subjectName':inputInfo[0], 'subjectID':inputInfo[1], 'group':inputInfo[-1], "expName":"WM Experiment"}
+# expInfo = {'subjectName':inputInfo[0], 'subjectID':inputInfo[1], 'group':inputInfo[-1], "expName":"WM Experiment"}
+expInfo = {'subjectID': inputInfo[1], 'expName': "WM_Experiment"}
 
-output_file = OUTPATH + expInfo['expName'] + '_%s.txt'%expInfo['subjectID']
-rt_clock = core.Clock() #reaction time clock
+output_file = OUTPATH + expInfo['expName'] + '_%s.txt' % expInfo['subjectID']
+rtClock = core.Clock()  # reaction time clock
 
-#create a window
+# create a window
 expWindow = visual.Window(size=SCREEN_SIZE,monitor="testMonitor",color=(230,230,230), colorSpace='rgb255', units=u'pix')
 # fullscr=True,
 
@@ -96,19 +98,21 @@ correct_answer_message = visual.TextStim(expWindow, pos=[0, 0], text="Richtig!",
 false_answer_message = visual.TextStim(expWindow, pos=[0, 0], text="Falsch!", font='Courier New', bold=True,
                                        color=(1.0, 0, 0), height=50, alignHoriz='center', units=u'pix')
 time_up_message = visual.TextStim(expWindow, pos=[0, 0], text="Die Zeit ist um!", font='Courier New', bold=True,
-                                         color=(1.0, 0, 0), height=35, alignHoriz='center', units=u'pix')
+                                  color=(1.0, 0, 0), height=35, alignHoriz='center', units=u'pix')
 
-#===============================================================================
-# read instructions
-#===============================================================================
+# ===============================================================================
+# check answer
+# ===============================================================================
+
 
 def check_answer(x, y, correct_answer):
-    '''
-    :param x: integer first dimension of mouse click
-    :param y: integer second dimension of mouse click
-    :param correct_answer: string
-    :return:
-    '''
+
+    # :param x: integer first dimension of mouse click
+    # :param y: integer second dimension of mouse click
+    # :param correct_answer: string
+    # :return:
+
+    interval = []
     if correct_answer == "A1":
         interval = [-4*HALF_WIDTH, -2*HALF_WIDTH, -4*HALF_WIDTH, -2*HALF_WIDTH]
     elif correct_answer == "A2":
@@ -142,33 +146,36 @@ def check_answer(x, y, correct_answer):
     elif correct_answer == "D4":
         interval = [2*HALF_WIDTH, 4*HALF_WIDTH, 2*HALF_WIDTH, 4*HALF_WIDTH]
 
-    if (x >= interval[0] and x <= interval[1]) and (y >= interval[2] and y <= interval[3]):
-        return True
+    if (interval[0] <= x <= interval[1]) and (interval[2] <= y <= interval[3]):
+        return 1
     else:
-        return False
-#===============================================================================
+        return 0
+
+# ===============================================================================
 # experiment class
-#===============================================================================
+# ===============================================================================
+
+
 class Image():
 
+    def __init__(self, name, _type, **kwargs):
 
-    def __init__(self, name, type, **kwargs):
-        '''
-        ** if the format of images are different(ie. .png, .jpg, .gif) give the complete name with extension and
-        remove the ".png" from self.path
-        :param name: name of the image
-        :param type: can be "load", "arrow", "questionMark", "questionLoad"
-        :return:
-        '''
+        # ** if the format of images are different(ie. .png, .jpg, .gif) give the complete name with extension and
+        # remove the ".png" from self.path
+        # :param name: name of the image
+        # :param type: can be "load", "arrow", "questionMark", "questionLoad"
+        # :return:
+
         self.path = '{0}\\images\\{1}.png'.format(PATH, name)
-        self.type = type
+        self.type = _type
         if 'loc' in kwargs:
             self.loc = kwargs['loc']
 
     def get_position(self):
 
+        position = [0, 0]
         if self.type == "arrow":
-            position = [0,0]
+            position = [0, 0]
         elif self.type == "questionMark":
             position = [-216-54, 216-75]
         elif self.type == "questionLoad":
@@ -211,33 +218,35 @@ class Image():
 
     def buffer(self):
 
-        bufferImage = visual.ImageStim(expWindow, image=self.path, pos=self.get_position(), units=u'pix')
-        return bufferImage
+        buffer_image = visual.ImageStim(expWindow, image=self.path, pos=self.get_position(), units=u'pix')
+        return buffer_image
 
-#-----------------------------------------------------------------------------
-# instruction
-Image("instruction", "arrow").buffer().draw()
-expWindow.flip() #flip blank screen
-core.wait(10) #10000 ms
-
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # define trial procedure
+
 
 def run_trials(items, practice=False):
 
-    #loop through trials
-    for i in [0,1]:#trial_order:
+    # loop through trials
+    for i in range(len(items)):  # trial_order:
 
-        item = items[i]#-1]
+        item = items[i]  # -1]
 
-        #prepare stimulus and draw on screen
+        # create and edit a list for the output file
+        out_item = [expInfo['subjectID']]
+        if item[5]:
+            out_item.insert(1, "3")
+        else:
+            out_item.insert(1, "2")
+
+        # prepare stimulus and draw on screen
         background = Image("background", "arrow").buffer()
         cartoon1 = Image(item[1], "load", loc=item[2]).buffer()
         cartoon2 = Image(item[3], "load", loc=item[4]).buffer()
 
-        #pre-stimulus interval
-        expWindow.flip() #flip blank screen
-        core.wait(1.5) #1500 ms
+        # stimulus interval
+        expWindow.flip()  # flip blank screen
+        core.wait(1.5)  # 1500 ms
 
         # Initial view
         background.draw()
@@ -246,132 +255,114 @@ def run_trials(items, practice=False):
         if item[5]:
             Image(item[5], "load", loc=item[6]).buffer().draw()
         expWindow.flip()
-        core.wait(3) #3000 ms
+        core.wait(3)  # 3000 ms
 
         # ISI
         expWindow.flip()
-        core.wait(.5) #500 ms
-
+        core.wait(.5)  # 500 ms
 
         # updates
-        for i in range(4):
-            if i == 3 and not item[5]:
+        for jj in range(4):
+            if jj == 3 and not item[5]:
                 break
             Image("background", "arrow").buffer().draw()
-            update = Image(item[i+7], "arrow").buffer()
+            update = Image(item[jj+7], "arrow").buffer()
             update.ori = 45
             update.draw()
             expWindow.flip()
-            core.wait(2.5) #2500 ms
+            core.wait(2.5)  # 2500 ms
 
             # ISI
             expWindow.flip()
-            core.wait(.5) #500 ms
+            core.wait(.5)  # 500 ms
 
         # questions ---------------------- now we have one column for update (it should get modified for two)
-        for i in range(3):
-            if i == 2 and not item[5]:
+        for ii in range(3):
+            if ii == 2 and not item[5]:  # check that the trial is two loads or three loads
+                for j in range(2):
+                    item.append("")
                 break
             Image("background", "arrow").buffer().draw()
             Image("questionMark", "questionMark").buffer().draw()
-            #ques.ori = 45
-            #ques.draw()
-            Image(item[11+i*2], "questionLoad").buffer().draw()
+            Image(item[11+ii*2], "questionLoad").buffer().draw()
 
             # mouse interaction
             mouse = event.Mouse(win=expWindow)
             expWindow.flip()
-            rtClock = core.Clock()
             rtClock.reset()
 
             timeout = time.time() + 60*0.5   # 30 seconds from now
             while True:
                 if time.time() > timeout:
-                    answer = False
+                    answer = 0
                     rt = 31
                     if practice:
                         Image("background", "arrow").buffer().draw()
                         Image("questionMark", "questionMark").buffer().draw()
-                        Image(item[11+i*2], "questionLoad").buffer().draw()
+                        Image(item[11+ii*2], "questionLoad").buffer().draw()
                         time_up_message.draw()
                         expWindow.flip()
                         core.wait(1)
+                    else:
+                        item.append(str(answer))
+                        item.append(str(rt))
                     break
                 if mouse.getPressed()[0]:
                     x, y = mouse.getPos()
-                    answer = check_answer(x, y, item[12+i*2])
+                    answer = check_answer(x, y, item[12+ii*2])
                     rt = rtClock.getTime()
                     if practice:
                         Image("background", "arrow").buffer().draw()
                         Image("questionMark", "questionMark").buffer().draw()
-                        Image(item[11+i*2], "questionLoad").buffer().draw()
+                        Image(item[11+ii*2], "questionLoad").buffer().draw()
                         if answer:
                             correct_answer_message.draw()
                         else:
                             false_answer_message.draw()
                         expWindow.flip()
                         core.wait(1)
+                    else:
+                        item.append(str(answer))
+                        item.append(str(rt))
                     break
 
-            # ISI
-            expWindow.flip()
-            core.wait(.5) #500 ms
+        if not practice:
+            o.write(";".join(out_item) + ";" + ";".join(item) + ";" + "\n")
 
-        #write out answers
-        #string_output = [expInfo['subjectID'], str(trial_count)] #initialize output list: subject ID, trial number (in exp)
-        #string_output.extend([str(x) for x in item]) #add trial infos
-        #string_output.extend([str(int(practice)),str(ans[-1]), str(match_answer(ans[-1], item[6])), str(rt)]) #add answer infos
-        #outfile.write(';'.join(string_output) + '\n') #write to file
+        # ISI
+        expWindow.flip()
+        core.wait(1.5)  # 1500 ms
 
 
-        #check if experiment was aborted
-        #if len(ans) == 2:
-        #    if ans[-2] == 'lctrl' and ans[-1] == 'q':
-        #        expWindow.close()
-        #        core.quit()
-
-        #trial_count += 1
-
-
-#===============================================================================
+# ===============================================================================
 # experiment
-#===============================================================================
+# ===============================================================================
 
-#------------------------------------------------------------------------------
-# present instructions
-run_trials(items, practice=True)
+# -----------------------------------------------------------------------------
+# instruction
+Image("instruction", "arrow").buffer().draw()
+expWindow.flip()  # flip blank screen
+event.waitKeys(keyList=['space'])
+
+# ------------------------------------------------------------------------------
+# practice part
+# run_trials(items, practice=True)
+
+# ------------------------------------------------------------------------------
+# experiment part
+with open(output_file, 'w') as o:
+    o.write(";".join(header[0]) + "\n")
+    run_trials(trials_list)  # , practice=True)
+
+
 import pdb
 pdb.set_trace()
 
+# ------------------------------------------------------------------------------
+# finish screen
+
 expWindow.flip()
 event.waitKeys(keyList=['space'])
-
-#------------------------------------------------------------------------------
-# run experiment
-with codecs.open(output_file, 'wb', encoding="utf-8") as outfile:
-
-    #write outfile header
-    #outfile.write('### Experiment: %s\n### Subject ID: %s\n### Date: %s\n\n' %(exp_info['exp_name'], exp_info['Subject'], exp_info['date']))
-    outfile.write('subject_id;trial;trial_id;cond;face_id;sex;focus_part;face_id_foil;target_pos;first_pres_in_cond;image_name_target;image_name_l;image_name_r;practice;ans;correct;rt\n')
-    #practice start if no questions
-
-    expWindow.flip()
-    event.waitKeys(keyList=['space'])
-
-    #run practice trials
-    #run_trials(practice_items, practice_trial_order, practice=True)
-
-    #practice end
-    #practice_end_screen.draw()
-    #exp_win.flip()
-    #event.waitKeys(keyList=['space'])
-
-    #exp start
-    run_trials(items, trial_order)
-
-test_end_screen.draw()
-expWindow.flip()
-event.waitKeys()
 
 expWindow.close()
 core.quit()
