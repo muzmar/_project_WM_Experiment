@@ -7,6 +7,7 @@
 import time
 import codecs
 
+from win32api import GetSystemMetrics
 from psychopy import visual, core, event, gui, data
 
 # ===============================================================================
@@ -18,7 +19,8 @@ FIXCROSS_SIZE = 40  # size of the fixation cross (the character '+' in Arial)
 INSTR_CHAR_SIZE = 18  # character size for instructions
 OUTPATH = '%s\\results\\' % PATH  # output path for storing the results
 LANGUAGE = 'DE'  # which language is the experiment in: 'DE'=German. 'CN'=Chinese
-SCREEN_SIZE = [800, 480]  # what is your screen resolution?
+SCREEN_SIZE = [GetSystemMetrics(0), GetSystemMetrics(1)]  # what is your screen resolution?
+# SCREEN_SIZE = [800, 480]  # what is your screen resolution?
 LANG_FONT_MAP = {'DE': 'Courier New', 'CN': 'SimSun'}  # what font is used for what language?
 HALF_WIDTH = 432/8
 
@@ -31,8 +33,8 @@ while inputInfo[0] != inputInfo[1] or not inputInfo[0].isdigit():
     expDlg = gui.Dlg(title="WM Experiment")
     expDlg.addText("Subject info")
     # expDlg.addField("Name:", fieldLength=25)
-    expDlg.addField("Subject_ID:", fieldLength=25)
-    expDlg.addField("Repeat__ID:", fieldLength=25)
+    expDlg.addField("Subject_ID:")
+    expDlg.addField("Repeat__ID:")
     expDlg.addText("")
     # expDlg.addText("Experiment info")
     # expDlg.addField("Group:", choices=["Test", "Control"], fieldLength=25)
@@ -49,6 +51,7 @@ while inputInfo[0] != inputInfo[1] or not inputInfo[0].isdigit():
 # ===============================================================================
 # read stimuli
 # ===============================================================================
+
 
 def read_stimuli(stimuli):
     trials = []
@@ -90,8 +93,8 @@ output_file = OUTPATH + expInfo['expName'] + '_%s.txt' % expInfo['subjectID']
 rtClock = core.Clock()  # reaction time clock
 
 # create a window
-expWindow = visual.Window(size=SCREEN_SIZE,monitor="testMonitor",color=(230,230,230), colorSpace='rgb255', units=u'pix')
-# fullscr=True,
+expWindow = visual.Window(size=SCREEN_SIZE, monitor="testMonitor", color=(230,230,230), fullscr=True,
+                          colorSpace='rgb255', units=u'pix')
 
 correct_answer_message = visual.TextStim(expWindow, pos=[0, 0], text="Richtig!", font='Courier New', bold=True,
                                          color=(0, 1.0, 0), height=50, alignHoriz='center', units=u'pix')
@@ -181,37 +184,37 @@ class Image():
         elif self.type == "questionLoad":
             position = [-216-54, -34]
         elif self.type == "load":
-            if self.loc == "A1":
+            if self.loc == "D1":
                 position = [-3*HALF_WIDTH, -3*HALF_WIDTH]
-            elif self.loc == "A2":
-                position = [-HALF_WIDTH, -3*HALF_WIDTH]
-            elif self.loc == "A3":
-                position = [HALF_WIDTH, -3*HALF_WIDTH]
-            elif self.loc == "A4":
-                position = [3*HALF_WIDTH, -3*HALF_WIDTH]
-            elif self.loc == "B1":
-                position = [-3*HALF_WIDTH, -HALF_WIDTH]
-            elif self.loc == "B2":
-                position = [-HALF_WIDTH, -HALF_WIDTH]
-            elif self.loc == "B3":
-                position = [HALF_WIDTH, -HALF_WIDTH]
-            elif self.loc == "B4":
-                position = [3*HALF_WIDTH, -HALF_WIDTH]
-            elif self.loc == "C1":
-                position = [-3*HALF_WIDTH, HALF_WIDTH]
-            elif self.loc == "C2":
-                position = [-HALF_WIDTH, HALF_WIDTH]
-            elif self.loc == "C3":
-                position = [HALF_WIDTH, HALF_WIDTH]
-            elif self.loc == "C4":
-                position = [3*HALF_WIDTH, HALF_WIDTH]
-            elif self.loc == "D1":
-                position = [-3*HALF_WIDTH, 3*HALF_WIDTH]
             elif self.loc == "D2":
-                position = [-HALF_WIDTH, 3*HALF_WIDTH]
+                position = [-HALF_WIDTH, -3*HALF_WIDTH]
             elif self.loc == "D3":
-                position = [HALF_WIDTH, 3*HALF_WIDTH]
+                position = [HALF_WIDTH, -3*HALF_WIDTH]
             elif self.loc == "D4":
+                position = [3*HALF_WIDTH, -3*HALF_WIDTH]
+            elif self.loc == "C1":
+                position = [-3*HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "C2":
+                position = [-HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "C3":
+                position = [HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "C4":
+                position = [3*HALF_WIDTH, -HALF_WIDTH]
+            elif self.loc == "B1":
+                position = [-3*HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "B2":
+                position = [-HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "B3":
+                position = [HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "B4":
+                position = [3*HALF_WIDTH, HALF_WIDTH]
+            elif self.loc == "A1":
+                position = [-3*HALF_WIDTH, 3*HALF_WIDTH]
+            elif self.loc == "A2":
+                position = [-HALF_WIDTH, 3*HALF_WIDTH]
+            elif self.loc == "A3":
+                position = [HALF_WIDTH, 3*HALF_WIDTH]
+            elif self.loc == "A4":
                 position = [3*HALF_WIDTH, 3*HALF_WIDTH]
 
         return position
@@ -338,11 +341,14 @@ def run_trials(items, practice=False):
 # experiment
 # ===============================================================================
 
-# -----------------------------------------------------------------------------
+# ===============================================================================
 # instruction
-Image("instruction", "arrow").buffer().draw()
-expWindow.flip()  # flip blank screen
-event.waitKeys(keyList=['space'])
+# ===============================================================================
+
+for im in range(20):
+    Image("Intro" + str(im+1) + "_Murks", "arrow").buffer().draw()
+    expWindow.flip()  # flip blank screen
+    event.waitKeys(keyList=['space'])
 
 # ------------------------------------------------------------------------------
 # practice part
