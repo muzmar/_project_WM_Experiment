@@ -8,16 +8,14 @@ import time
 import codecs
 
 from win32api import GetSystemMetrics
-from psychopy import visual, core, event, gui, data
+from psychopy import visual, core, event, gui
 
 # ===============================================================================
 # global variables: INTERFACE
 # ===============================================================================
 PATH = 'C:\\pythonProjects\\_project_WM_Experiment'
-OUTPATH = '%s\\results\\' % PATH  # output path for storing the results
-LANGUAGE = 'DE'  # which language is the experiment in: 'DE'=German. 'CN'=Chinese
-# SCREEN_SIZE = [GetSystemMetrics(0), GetSystemMetrics(1)]  # what is your screen resolution?
-SCREEN_SIZE = [1000,600]
+OUTPUT_PATH = '%s\\results\\' % PATH  # output path for storing the results
+SCREEN_SIZE = [GetSystemMetrics(0), GetSystemMetrics(1)]  # what is your screen resolution?
 HALF_WIDTH = int(round((SCREEN_SIZE[0]/7.942)/2))
 rtClock = core.Clock()  # reaction time clock
 
@@ -160,27 +158,27 @@ def check_answer(x, y, correct_answer):
         return 0
 
 
-def update_direction_finder(dir):
+def update_direction_finder(direction_arrow):  # increment of degrees in clockwise direction!!!!!
 
-    if dir == "N":
+    if direction_arrow == "N":
         return 0
-    elif dir == "NW":
-        return 45
-    elif dir == "W":
-        return 90
-    elif dir == "SW":
-        return 135
-    elif dir == "S":
-        return 180
-    elif dir == "SO":
-        return 225
-    elif dir == "O":
-        return 270
-    elif dir == "NO":
+    elif direction_arrow == "NW":
         return 315
+    elif direction_arrow == "W":
+        return 270
+    elif direction_arrow == "SW":
+        return 225
+    elif direction_arrow == "S":
+        return 180
+    elif direction_arrow == "SO":
+        return 135
+    elif direction_arrow == "O":
+        return 90
+    elif direction_arrow == "NO":
+        return 45
 
 
-def load_background(): # Load background fit to expWindow
+def load_background():  # Load background fit to expWindow
     bg = Image("Background", "arrow").buffer()
     bg.setSize(SCREEN_SIZE[0]/3150.0, '*')
     return bg.draw()
@@ -199,10 +197,27 @@ def load_small_cartoon(color):
     return small_cartoon.draw()
 
 
+def load_quarter_message(num):
+
+    if num == 1:
+        Image("1one_quarter", "arrow").buffer().draw()
+    elif num == 2:
+        Image("2two_quarters", "arrow").buffer().draw()
+    elif num == 3:
+        Image("3three_quarters", "arrow").buffer().draw()
+    elif num == 4:
+        Image("4end", "arrow").buffer().draw()
+
+
 def run_trials(items, practice=False):
 
+    trial_count = 0
+    if practice:
+        t_list = [0, 4]
+    else:
+        t_list = [0, 4]#, 8, 12, 16, 20, 24, 28]
     # loop through trials
-    for i in [0,4]:  # range(len(items)):  # trial_order:
+    for i in t_list:  # range(len(items)):  # trial_order:
 
         item = items[i]  # -1]
 
@@ -267,7 +282,7 @@ def run_trials(items, practice=False):
             while True:
                 if time.time() > timeout:
                     answer = 0
-                    rt = 31
+                    rt = 31000
                     if practice:
                         load_background()
                         Image("Question", "questionMark").buffer().draw()
@@ -295,11 +310,17 @@ def run_trials(items, practice=False):
                         core.wait(1)
                     else:
                         item.append(str(answer))
-                        item.append(str(rt))
+                        item.append(str(round(rt*1000, 3)))
                     break
 
         if not practice:
             o.write(";".join(out_item) + ";" + ";".join(item) + ";" + "\n")
+            # quarter message
+            trial_count += 1
+            if trial_count in [16, 32, 48, 64]:
+                load_quarter_message(trial_count/16)
+                expWindow.flip()
+                event.waitKeys(keyList=['space'])
 
         # ISI
         expWindow.flip()
@@ -328,7 +349,7 @@ while inputInfo[0] != inputInfo[1] or not inputInfo[0].isdigit():
 # ===============================================================================
 # experiment preparation
 # ===============================================================================
-practice_list, header = read_stimuli('{0}\\stimuli\\Trials_Practice_WMExperiment.txt'.format(PATH))
+practice_list, header_useless = read_stimuli('{0}\\stimuli\\Trials_Practice_WMExperiment.txt'.format(PATH))
 trials_list, header = read_stimuli('{0}\\stimuli\\Trials_WMExperiment.txt'.format(PATH))
 # Edit header line for using in the output
 header[0][0] = "trial"
@@ -336,11 +357,11 @@ header[0][0:0] = ["Subject_ID", "load"]
 header[0].extend(["Answer1", "rt1", "Answer", "rt2", "Answer3", "rt3"])
 # output file
 expInfo = {'subjectID': inputInfo[1], 'expName': "WM_Experiment"}
-output_file = OUTPATH + expInfo['expName'] + '_%s.txt' % expInfo['subjectID']
+output_file = OUTPUT_PATH + expInfo['expName'] + '_%s.txt' % expInfo['subjectID']
 # create a window
-expWindow = visual.Window(size=SCREEN_SIZE, monitor="testMonitor", color=(230, 230, 230),
+expWindow = visual.Window(size=SCREEN_SIZE, monitor="testMonitor", color=(230, 230, 230), fullscr=True,
                           colorSpace='rgb255', units=u'pix')
-# fullscr=True,
+
 # messages in practice part
 correct_answer_message = visual.TextStim(expWindow, pos=[0, 0], text="Richtig!", font='Courier New', bold=True,
                                          color=(0, 1.0, 0), height=50, alignHoriz='center', units=u'pix')
@@ -361,7 +382,7 @@ expWindow.flip()  # flip blank screen
 event.waitKeys(keyList=['space'])
 
 # ===============================================================================
-# practice part + practice_start_screen
+# practice part + practice_end_screen
 # ===============================================================================
 run_trials(practice_list, practice=True)
 Image("practice_end_screen", "arrow").buffer().draw()
@@ -369,21 +390,11 @@ expWindow.flip()  # flip blank screen
 event.waitKeys(keyList=['space'])
 
 # ===============================================================================
-# main part + Test_End_Screen
+# main part
 # ===============================================================================
 with open(output_file, 'w') as o:
     o.write(";".join(header[0]) + "\n")
     run_trials(trials_list)
-Image("Test_End_Screen", "arrow").buffer().draw()
-expWindow.flip()  # flip blank screen
-event.waitKeys(keyList=['space'])
 
 expWindow.close()
 core.quit()
-
-
-#expWindow.flip()
-#event.waitKeys(keyList=['space'])
-
-# expWindow.close()
-#core.quit()
