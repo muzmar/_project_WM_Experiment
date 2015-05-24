@@ -1,3 +1,0 @@
-###orig, trial#;cartoon1;posCartoon1;cartoon2;posCartoon2;cartoon3;posCartoon3;update1;update2;update3;update4;question1;question1CorrectAnswer;question2;question2CorrectAnswer;question3;question3CorrectAnswer
-1;red;A1;blue;B3;;;Up;Down;Right;;red;C2;blue;A3;;;
-2;green;A3;red;D2;blue;C1;Up;Down;Right;Left;blue;D2;green;B2;red;C1;
