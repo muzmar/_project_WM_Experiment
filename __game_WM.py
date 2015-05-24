@@ -212,14 +212,10 @@ def load_quarter_message(num):
 def run_trials(items, practice=False):
 
     trial_count = 0
-    if practice:
-        t_list = [0, 4]
-    else:
-        t_list = [0, 4]#, 8, 12, 16, 20, 24, 28]
     # loop through trials
-    for i in t_list:  # range(len(items)):  # trial_order:
+    for i in range(len(items)):
 
-        item = items[i]  # -1]
+        item = items[i]
 
         # create and edit a list for the output file
         out_item = [expInfo['subjectID']]
@@ -234,13 +230,13 @@ def run_trials(items, practice=False):
 
         # stimulus interval
         expWindow.flip()  # flip blank screen
-        core.wait(1.5)  # 1500 ms
+        core.wait(1)  # 1000 ms
 
         # Initial view
         load_background()
         cartoon1.draw()
         cartoon2.draw()
-        if item[5]:
+        if item[5]:  # true = three loads
             Image(item[5], "load", loc=item[6]).buffer().draw()
         expWindow.flip()
         core.wait(3)  # 3000 ms
@@ -321,10 +317,6 @@ def run_trials(items, practice=False):
                 load_quarter_message(trial_count/16)
                 expWindow.flip()
                 event.waitKeys(keyList=['space'])
-
-        # ISI
-        expWindow.flip()
-        core.wait(1.5)  # 1500 ms
 
 # ===============================================================================
 # initial dialogue box
