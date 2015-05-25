@@ -16,6 +16,7 @@ from psychopy import visual, core, event, gui
 PATH = 'C:\\pythonProjects\\_project_WM_Experiment'
 OUTPUT_PATH = '%s\\results\\' % PATH  # output path for storing the results
 SCREEN_SIZE = [GetSystemMetrics(0), GetSystemMetrics(1)]  # what is your screen resolution?
+FACTOR_RESIZE = SCREEN_SIZE[0]/3150.0
 HALF_WIDTH = int(round((SCREEN_SIZE[0]/7.942)/2))
 rtClock = core.Clock()  # reaction time clock
 
@@ -180,7 +181,7 @@ def update_direction_finder(direction_arrow):  # increment of degrees in clockwi
 
 def load_background():  # Load background fit to expWindow
     bg = Image("Background", "arrow").buffer()
-    bg.setSize(SCREEN_SIZE[0]/3150.0, '*')
+    bg.setSize(FACTOR_RESIZE, '*')
     return bg.draw()
 
 
@@ -212,6 +213,10 @@ def load_quarter_message(num):
 def run_trials(items, practice=False):
 
     trial_count = 0
+    # if practice:
+    #     t_list = [0, 4]
+    # else:
+    #     t_list = [0, 4, 9, 13, 18, 22, 27, 31]
     # loop through trials
     for i in range(len(items)):
 
@@ -313,8 +318,8 @@ def run_trials(items, practice=False):
             o.write(";".join(out_item) + ";" + ";".join(item) + ";" + "\n")
             # quarter message
             trial_count += 1
-            if trial_count in [16, 32, 48, 64]:
-                load_quarter_message(trial_count/16)
+            if trial_count in [8, 16, 24, 32]:
+                load_quarter_message(trial_count/8)
                 expWindow.flip()
                 event.waitKeys(keyList=['space'])
 
