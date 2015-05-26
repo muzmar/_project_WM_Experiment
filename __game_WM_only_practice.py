@@ -318,7 +318,7 @@ def run_trials(items, practice=False):
                     break
 
         if not practice:
-            o.write(";".join(out_item) + ";" + ";".join(item) + ";" + "\n")
+            # o.write(";".join(out_item) + ";" + ";".join(item) + ";" + "\n")
             # quarter message
             trial_count += 1
             if trial_count in [8, 16, 24, 32]:
@@ -392,9 +392,9 @@ event.waitKeys(keyList=['space'])
 # ===============================================================================
 # main part
 # ===============================================================================
-with open(output_file, 'w') as o:
-    o.write(";".join(header[0]) + "\n")
-    run_trials(trials_list)
+# with open(output_file, 'w') as o:
+#     o.write(";".join(header[0]) + "\n")
+#     run_trials(trials_list)
 
 expWindow.close()
 core.quit()
