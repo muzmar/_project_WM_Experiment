@@ -213,11 +213,6 @@ def load_quarter_message(num):
 def run_trials(items, practice=False):
 
     trial_count = 0
-    # if practice:
-    #     t_list = [0, 4]
-    # else:
-    #     t_list = [0, 4, 9, 13, 18, 22, 27, 31]
-    # loop through trials
     for i in range(len(items)):
 
         item = items[i]
