@@ -316,13 +316,15 @@ def run_trials(items, practice=False):
                         item.append(str(answer))
                         item.append(str(round(rt*1000, 3)))
                     break
+                if event.getKeys(["q"]):
+                    core.quit()
 
         if not practice:
             # o.write(";".join(out_item) + ";" + ";".join(item) + ";" + "\n")
             # quarter message
             trial_count += 1
-            if trial_count in [8, 16, 24, 32]:
-                load_quarter_message(trial_count/8)
+            if (trial_count % (len(items)/4)) == 0:  # in [8, 16, 24, 32]:
+                load_quarter_message(trial_count/(len(items)/4))
                 expWindow.flip()
                 event.waitKeys(keyList=['space'])
 

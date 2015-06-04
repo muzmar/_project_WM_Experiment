@@ -117,7 +117,7 @@ def check_answer(x, y, correct_answer):
     # :param x: integer first dimension of mouse click
     # :param y: integer second dimension of mouse click
     # :param correct_answer: string
-    # :return:
+    # :return: 0 for false and for correct
 
     interval = []
     if correct_answer == "D1":
@@ -311,13 +311,15 @@ def run_trials(items, practice=False):
                         item.append(str(answer))
                         item.append(str(round(rt*1000, 3)))
                     break
+                if event.getKeys(["q"]):
+                    core.quit()
 
         if not practice:
             o.write(";".join(out_item) + ";" + ";".join(item) + ";" + "\n")
             # quarter message
             trial_count += 1
             if (trial_count % (len(items)/4)) == 0:  # in [8, 16, 24, 32]:
-                load_quarter_message(trial_count/8)
+                load_quarter_message(trial_count/(len(items)/4))
                 expWindow.flip()
                 event.waitKeys(keyList=['space'])
 
