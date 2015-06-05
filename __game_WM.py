@@ -309,7 +309,7 @@ def run_trials(items, practice=False):
                         core.wait(1)
                     else:
                         item.append(str(answer))
-                        item.append(str(round(rt*1000, 3)))
+                        item.append(str(rt*1000))
                     break
                 if event.getKeys(["q"]):
                     core.quit()
